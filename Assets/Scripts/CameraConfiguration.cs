@@ -1,16 +1,17 @@
+using System;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Camera/Camera Configuration")]
-public class CameraConfiguration : ScriptableObject
+[Serializable]
+public class CameraConfiguration
 {
-    public float pitch;
-    public float yaw;
-    public float roll = 0;
+    [Range(-90f, 90f)] public float pitch;
+    [Range(0, 360f)] public float yaw;
+    [Range(-180f, 180f)] public float roll = 0;
 
     public Vector3 pivot;
-    public float distance;
+    [Min(0f)] public float distance;
 
-    public float fov = 90;
+    [Range(0, 180f)] public float fov = 60;
 
     public Quaternion GetRotation { get => Quaternion.Euler(pitch, yaw, roll); }
     public Vector3 GetPosition {  get => GetRotation * (Vector3.back * distance) + pivot; }
