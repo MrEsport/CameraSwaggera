@@ -154,10 +154,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isActiveOnStart: 1
   weight: 1
-  pitch: 0
-  yaw: 0
-  roll: 0
-  fov: 90
+  pitch: -33
+  yaw: 10
+  roll: -87
+  fov: 134
 --- !u!4 &545128530
 Transform:
   m_ObjectHideFlags: 0
@@ -431,6 +431,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _camera: {fileID: 963194227}
+  currentView: {fileID: 594858301}
+  targetView: {fileID: 545128529}
+  transitionTime: 5
+  t: 0
 --- !u!4 &1224568711
 Transform:
   m_ObjectHideFlags: 0

@@ -11,25 +11,33 @@ public class CameraController : MonoBehaviour
 
     private List<AView> _activeViews = new List<AView>();
 
+    [SerializeField] private AView currentView = null;
+    [SerializeField] private AView targetView = null;
+    [SerializeField] private float transitionTime = 1;
+    private float timer = 0;
+
+    [Range(0f, 1f)] public float t = 0;
+
     private void Awake()
     {
         if(_instance != null)
             Destroy(gameObject);
         else
             _instance = this;
+
+       TransitionFromTo(currentView, targetView, transitionTime);
     }
 
     private void Update()
     {
         if (_activeViews.Count <= 0)
             return;
-
-        ApplyConfiguration(_camera, ComputeWeightedAverageConfiguration());
+        
+        //ApplyConfiguration(_camera, ViewLerp(currentView, targetView, t));
     }
 
     public void ApplyConfiguration(Camera camera, CameraConfiguration configuration)
     {
-        //_camera = camera;
         camera.transform.rotation = configuration.GetRotation; 
         camera.transform.position = configuration.GetPosition; 
         camera.fieldOfView = configuration.fov;
@@ -81,10 +89,49 @@ public class CameraController : MonoBehaviour
         return config;
     }
 
+    private CameraConfiguration ViewLerp(AView viewA, AView viewB, float t)
+    {
+        var config = new CameraConfiguration();
+
+        var viewAConfig = viewA.GetConfiguration();
+        var viewBConfig = viewB.GetConfiguration();
+
+        config.pitch = (viewAConfig.pitch * t + viewBConfig.pitch * (1 - t));
+        config.yaw = Vector2.SignedAngle(Vector2.right, new Vector2(Mathf.Cos(viewAConfig.yaw * Mathf.Deg2Rad), Mathf.Sin(viewAConfig.yaw * Mathf.Deg2Rad)) * t // Average Yaw from Vectors
+                    + new Vector2(Mathf.Cos(viewBConfig.yaw * Mathf.Deg2Rad), Mathf.Sin(viewBConfig.yaw * Mathf.Deg2Rad)) * (1 - t)); // Average Yaw from Vectors
+        config.roll = (viewAConfig.roll * t + viewBConfig.roll * (1 - t));
+
+        config.distance = (viewAConfig.distance * t + viewBConfig.distance * (1 - t));
+        config.fov = (viewAConfig.fov * t + viewBConfig.fov * (1 - t));
+        
+        config.pivot = (viewAConfig.pivot * t + viewBConfig.pivot * (1 - t));
+
+        return config;
+    }
+
+    public void TransitionFromTo(AView viewA, AView viewB, float time)
+    {
+        StartCoroutine(TransitionCoroutine());
+
+        IEnumerator TransitionCoroutine()
+        {
+            t = 0;
+            while (1 - t >= .01f)
+            {
+                t += (1-t) * (1/time) * Time.deltaTime;
+                this.timer = 1 - t >= .01f ? t : 1;
+                ApplyConfiguration(_camera, ViewLerp(viewA, viewB, t));
+                yield return null;
+            }
+            Debug.Log("Transition done!");
+        }
+    }
+
+
     private void OnDrawGizmos()
     {
         if(_activeViews.Count <= 0)
             return;
-        ComputeWeightedAverageConfiguration().DrawGizmos(Color.cyan);
+        ViewLerp(currentView, targetView, t).DrawGizmos(Color.cyan);
     }
 }
