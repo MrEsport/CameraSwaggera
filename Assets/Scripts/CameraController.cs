@@ -9,14 +9,15 @@ public class CameraController : MonoBehaviour
 
     [SerializeField] private Camera _camera;
 
-    private List<AView> _activeViews = new List<AView>();
-
     [SerializeField] private AView currentView = null;
     [SerializeField] private AView targetView = null;
     [SerializeField] private float transitionTime = 1;
-    private float timer = 0;
-
+    
     [Range(0f, 1f)] public float t = 0;
+    
+    private List<AView> _activeViews = new List<AView>();
+
+    private Coroutine transitionRoutine = null;
 
     private void Awake()
     {
@@ -32,8 +33,11 @@ public class CameraController : MonoBehaviour
     {
         if (_activeViews.Count <= 0)
             return;
+
+        if (transitionRoutine != null)
+            return;
         
-        //ApplyConfiguration(_camera, ViewLerp(currentView, targetView, t));
+        ApplyConfiguration(_camera, ViewLerp(currentView, targetView, t));
     }
 
     public void ApplyConfiguration(Camera camera, CameraConfiguration configuration)
@@ -111,20 +115,25 @@ public class CameraController : MonoBehaviour
 
     public void TransitionFromTo(AView viewA, AView viewB, float time)
     {
-        StartCoroutine(TransitionCoroutine());
+        if(transitionRoutine != null)
+            StopCoroutine(transitionRoutine);
+
+        transitionRoutine = StartCoroutine(TransitionCoroutine());
 
         IEnumerator TransitionCoroutine()
         {
             t = 0;
-            while (1 - t >= .01f)
+            while (1 - t >= .025f)
             {
-                t += (1-t) * (1/time) * Time.deltaTime;
-                this.timer = 1 - t >= .01f ? t : 1;
+                t += (1 - t) * (1 / time) * Time.deltaTime;
+                t = 1 - t >= .025f ? t : 1;
                 ApplyConfiguration(_camera, ViewLerp(viewA, viewB, t));
                 yield return null;
             }
             Debug.Log("Transition done!");
         }
+
+        transitionRoutine = null;
     }
 
 
