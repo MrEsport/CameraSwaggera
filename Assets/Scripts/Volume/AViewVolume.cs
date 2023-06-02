@@ -11,6 +11,8 @@ public class AViewVolume : MonoBehaviour
     protected int Uid;
     public static int NextUid;
 
+    protected bool IsActive { get; private set; }
+
     private void Awake()
     {
         Uid = NextUid;
@@ -21,5 +23,18 @@ public class AViewVolume : MonoBehaviour
     public virtual float ComputeSelfWeight()
     {
         return 1.0f;
+    }
+
+    protected void SetActive(bool isActive)
+    {
+        IsActive = isActive;
+        if (IsActive)
+        {
+            ViewVolumeBlender.Instance.AddVolume(this);
+        }
+        else
+        {
+            ViewVolumeBlender.Instance.RemoveVolume(this);
+        }
     }
 }
