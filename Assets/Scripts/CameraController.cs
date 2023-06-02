@@ -26,7 +26,7 @@ public class CameraController : MonoBehaviour
         else
             _instance = this;
 
-       TransitionFromTo(currentView, targetView, transitionTime);
+       //TransitionFromTo(currentView, targetView, transitionTime);
     }
 
     private void Update()
@@ -37,7 +37,7 @@ public class CameraController : MonoBehaviour
         if (transitionRoutine != null)
             return;
         
-        ApplyConfiguration(_camera, ViewLerp(currentView, targetView, t));
+        ApplyConfiguration(_camera, currentView.GetConfiguration());
     }
 
     public void ApplyConfiguration(Camera camera, CameraConfiguration configuration)
@@ -141,6 +141,8 @@ public class CameraController : MonoBehaviour
     {
         if(_activeViews.Count <= 0)
             return;
-        ViewLerp(currentView, targetView, t).DrawGizmos(Color.cyan);
+        currentView.GetConfiguration().DrawGizmos(Color.magenta) ;
+
+        //ViewLerp(currentView, targetView, t).DrawGizmos(Color.cyan);
     }
 }
