@@ -1,32 +1,63 @@
+using NaughtyAttributes;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
+[UnityEditor.CanEditMultipleObjects]
 public class DollyView : AView
 {
-    [SerializeField] Transform target;
-    [SerializeField] Rail rail;
+    [SerializeField, Range(-180f, 180f)] private float roll = 0;
+    [SerializeField, Min(0f)] private float distance;
+    [SerializeField, Range(0, 180f)] private float fov = 60;
+    
+    [SerializeField] private Transform target;
+    [SerializeField] private Rail rail;
 
-    [SerializeField] float distanceOnRail;
-    [SerializeField] float speed;
+    [SerializeField] private bool isAuto;
+    [SerializeField] private float speed;
 
-    [Range(-180f, 180f)] public float roll = 0;
-
-    [Min(0f)] public float distance;
-
-    [Range(0, 180f)] public float fov = 60;
+    private float _distanceOnRail;
 
     private void Update()
     {
-        distanceOnRail += Input.GetAxisRaw("Horizontal") * speed * Time.deltaTime;
-        if (!rail.IsLoop) distanceOnRail = Mathf.Clamp(distanceOnRail, 0, rail.Length);
+        float direction = 0f;
+
+        if (isAuto)
+        {
+            float targetDistance = rail.GetClosestPointOnRailDistance(target.position);
+
+            if (Mathf.Abs(targetDistance - _distanceOnRail) <= 0.5f) direction = 0f;
+            else if (!rail.IsLoop) direction = Mathf.Sign(targetDistance - _distanceOnRail);
+            else
+            {
+                float diff = Mathf.Abs(targetDistance - _distanceOnRail);
+                float loopedDiff = 0f;
+
+                if (_distanceOnRail < targetDistance)
+                {
+                    loopedDiff = _distanceOnRail + rail.Length - targetDistance;
+                    direction = Mathf.Sign(loopedDiff - diff);
+                }
+                else
+                {
+                    loopedDiff = targetDistance + rail.Length - _distanceOnRail;
+                    direction = Mathf.Sign(diff - loopedDiff);
+                }
+            }
+        }
+        else
+            direction = Input.GetAxisRaw("Horizontal");
+
+        _distanceOnRail += direction * speed * Time.deltaTime;
+        _distanceOnRail = Mathf.Repeat(_distanceOnRail, rail.Length);
     }
 
     public override CameraConfiguration GetConfiguration()
     {
         var config = base.GetConfiguration();
 
-        config.pivot = rail.GetPosition(distanceOnRail);
+        config.pivot = rail.GetPosition(_distanceOnRail);
 
         Vector3 dir = (target.position - config.pivot).normalized;
 
@@ -42,7 +73,7 @@ public class DollyView : AView
 
     private void OnDrawGizmos()
     {
-        if (target == null)
+        if (target == null || rail == null || !rail.HasNodes)
             return;
 
         GetConfiguration().DrawGizmos(Color.magenta);

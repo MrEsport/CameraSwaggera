@@ -21,4 +21,11 @@ public static class MathUtils
         return LinearBezier(QuadraticBezier(A,B,C,t), QuadraticBezier(B,C,D,t),t );
     }
 
+    public static Vector3 GetNearestPointOnSegment(Vector3 A, Vector3 B, Vector3 target)
+    {
+        Vector3 n = (B - A).normalized;
+        float dot = Vector3.Dot(target - A, n);
+        dot = Mathf.Clamp(dot, 0, Vector3.Distance(A, B));
+        return A + n * dot;
+    }
 }

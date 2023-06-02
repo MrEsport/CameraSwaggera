@@ -16,7 +16,7 @@ public class CameraController : MonoBehaviour
     [Range(0f, 1f)] public float t = 0;
     
     private List<AView> _activeViews = new List<AView>();
-
+    private CameraConfiguration _currentConfig;
     private Coroutine transitionRoutine = null;
 
     private void Awake()
@@ -26,7 +26,10 @@ public class CameraController : MonoBehaviour
         else
             _instance = this;
 
-       //TransitionFromTo(currentView, targetView, transitionTime);
+        if (currentView == null || targetView == null)
+            return;
+
+       TransitionFromTo(currentView, targetView, transitionTime);
     }
 
     private void Update()
@@ -36,12 +39,19 @@ public class CameraController : MonoBehaviour
 
         if (transitionRoutine != null)
             return;
-        
-        ApplyConfiguration(_camera, currentView.GetConfiguration());
+
+        if (currentView == null || targetView == null)
+        {
+            ApplyConfiguration(_camera, ComputeWeightedAverageConfiguration());
+            return;
+        }
+
+        ApplyConfiguration(_camera, ViewLerp(currentView, targetView, t));
     }
 
     public void ApplyConfiguration(Camera camera, CameraConfiguration configuration)
     {
+        _currentConfig = configuration;
         camera.transform.rotation = configuration.GetRotation; 
         camera.transform.position = configuration.GetPosition; 
         camera.fieldOfView = configuration.fov;
@@ -130,7 +140,6 @@ public class CameraController : MonoBehaviour
                 ApplyConfiguration(_camera, ViewLerp(viewA, viewB, t));
                 yield return null;
             }
-            Debug.Log("Transition done!");
         }
 
         transitionRoutine = null;
@@ -141,8 +150,7 @@ public class CameraController : MonoBehaviour
     {
         if(_activeViews.Count <= 0)
             return;
-        currentView.GetConfiguration().DrawGizmos(Color.magenta) ;
-
-        //ViewLerp(currentView, targetView, t).DrawGizmos(Color.cyan);
+        
+        _currentConfig?.DrawGizmos(Color.cyan);
     }
 }
