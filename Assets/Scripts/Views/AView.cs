@@ -7,7 +7,8 @@ public abstract class AView : MonoBehaviour
 {
     [SerializeField] protected bool isActiveOnStart;
 
-    [Min(0f)] public float weight;
+    [Min(0f), SerializeField] private float weight;
+    public float Weight { get => weight; set => weight = value; }
 
     private CameraConfiguration _config;
 
@@ -29,7 +30,7 @@ public abstract class AView : MonoBehaviour
     protected virtual void Reset()
     {
         isActiveOnStart = true;
-        weight = 1f;
+        Weight = 1f;
     }
 
     protected virtual void Start()

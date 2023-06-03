@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class ViewVolumeBlender : MonoBehaviour
@@ -16,6 +17,26 @@ public class ViewVolumeBlender : MonoBehaviour
     private void Awake()
     {
         instance = this;
+    }
+
+    private void Update()
+    {
+        for (int i = 0; i < activeViewVolumes.Count; ++i)
+            activeViewVolumes[i].view.Weight = 0f;
+
+        var orderedVolumes = activeViewVolumes
+            .OrderByDescending(v => v.priority)       // Order by Priority
+            .ThenByDescending(v => v.Uid)             // If Same Priority, Order by UID
+            .ToList();
+
+        for (int i = 0; i < orderedVolumes.Count; ++i)
+        {
+            float weight = Mathf.Clamp01(orderedVolumes[i].ComputeSelfWeight());
+            float remainingWeight = 1f - weight;
+            foreach (var view in volumesPerView.Keys)
+                view.Weight *= remainingWeight;
+            orderedVolumes[i].view.Weight += weight;
+        }
     }
 
     public void AddVolume(AViewVolume volume)

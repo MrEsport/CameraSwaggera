@@ -57,8 +57,21 @@ public class CameraController : MonoBehaviour
         camera.fieldOfView = configuration.fov;
     }
 
-    public void AddView(AView view) => _activeViews.Add(view);
-    public void RemoveView(AView view) => _activeViews.Remove(view);
+    public void AddView(AView view)
+    {
+        if (_activeViews.Contains(view))
+            return;
+
+        _activeViews.Add(view);
+    }
+
+    public void RemoveView(AView view)
+    {
+        if (!_activeViews.Contains(view))
+            return;
+
+        _activeViews.Remove(view);
+    }
 
     private CameraConfiguration ComputeWeightedAverageConfiguration()
     {
@@ -79,16 +92,16 @@ public class CameraController : MonoBehaviour
         {
             var viewConfig = view.GetConfiguration();
 
-            pitchSum += viewConfig.pitch * view.weight;
-            yawSum += new Vector2(Mathf.Cos(viewConfig.yaw * Mathf.Deg2Rad), Mathf.Sin(viewConfig.yaw * Mathf.Deg2Rad)) * view.weight; // Average Yaw from Vectors
-            rollSum += viewConfig.roll * view.weight;
+            pitchSum += viewConfig.pitch * view.Weight;
+            yawSum += new Vector2(Mathf.Cos(viewConfig.yaw * Mathf.Deg2Rad), Mathf.Sin(viewConfig.yaw * Mathf.Deg2Rad)) * view.Weight; // Average Yaw from Vectors
+            rollSum += viewConfig.roll * view.Weight;
 
-            distanceSum += viewConfig.distance * view.weight;
-            fovSum += viewConfig.fov * view.weight;
+            distanceSum += viewConfig.distance * view.Weight;
+            fovSum += viewConfig.fov * view.Weight;
 
-            pivotSum += viewConfig.pivot * view.weight;
+            pivotSum += viewConfig.pivot * view.Weight;
 
-            totalWeight += view.weight;
+            totalWeight += view.Weight;
         }
 
         config.pitch = pitchSum / totalWeight;

@@ -8,7 +8,7 @@ public abstract class AViewVolume : MonoBehaviour
     public int priority;
     public AView view;
 
-    protected int Uid;
+    public int Uid { get; private set; }
     public static int NextUid;
 
     protected bool IsActive { get; private set; }
@@ -18,7 +18,6 @@ public abstract class AViewVolume : MonoBehaviour
         Uid = NextUid;
         NextUid++;
     }
-
 
     public virtual float ComputeSelfWeight()
     {
