@@ -1,4 +1,4 @@
-using System.Collections;
+using NaughtyAttributes;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,15 +9,18 @@ public class CameraController : MonoBehaviour
 
     [SerializeField] private Camera _camera;
 
-    [SerializeField] private AView currentView = null;
-    [SerializeField] private AView targetView = null;
-    [SerializeField] private float transitionTime = 1;
-    
-    [Range(0f, 1f)] public float t = 0;
-    
+    [SerializeField] private float transitionSpeed = 1;
+    [CurveRange(0, 0, 1, 1, EColor.Green), SerializeField] private AnimationCurve speedCurve;
+    [SerializeField] private float maxTargetDistance;
+
+    [Range(0f, 1f), SerializeField] private float t = 0;
+
     private List<AView> _activeViews = new List<AView>();
     private CameraConfiguration _currentConfig;
-    private Coroutine transitionRoutine = null;
+    private CameraConfiguration _targetConfig;
+    [SerializeField] private bool isCutRequested;
+
+    private float distanceSpeedFactor;
 
     private void Awake()
     {
@@ -25,28 +28,29 @@ public class CameraController : MonoBehaviour
             Destroy(gameObject);
         else
             _instance = this;
-
-        if (currentView == null || targetView == null)
-            return;
-
-       TransitionFromTo(currentView, targetView, transitionTime);
     }
 
     private void Update()
     {
+        if (_currentConfig == null && !InitializeConfig())
+            return;
+
         if (_activeViews.Count <= 0)
             return;
 
-        if (transitionRoutine != null)
-            return;
+        // Compute Target config for this frame from Active Views
+        _targetConfig = ComputeWeightedAverageConfiguration();
 
-        if (currentView == null || targetView == null)
+        if(isCutRequested)
         {
-            ApplyConfiguration(_camera, ComputeWeightedAverageConfiguration());
+            // Force Cut to Target config
+            ApplyConfiguration(_camera, _targetConfig);
+            isCutRequested = false;
             return;
         }
 
-        ApplyConfiguration(_camera, ViewLerp(currentView, targetView, t));
+        // Interpolate toward desired config
+        ApplyConfiguration(_camera, LerpConfig());
     }
 
     public void ApplyConfiguration(Camera camera, CameraConfiguration configuration)
@@ -71,6 +75,20 @@ public class CameraController : MonoBehaviour
             return;
 
         _activeViews.Remove(view);
+    }
+
+    public void Cut()
+    {
+        isCutRequested = true;
+    }
+
+    private bool InitializeConfig()
+    {
+        if (_activeViews.Count <= 0)
+            return false;
+
+        _currentConfig = ComputeWeightedAverageConfiguration();
+        return true;
     }
 
     private CameraConfiguration ComputeWeightedAverageConfiguration()
@@ -116,48 +134,33 @@ public class CameraController : MonoBehaviour
         return config;
     }
 
-    private CameraConfiguration ViewLerp(AView viewA, AView viewB, float t)
+    private CameraConfiguration LerpConfig()
     {
+        distanceSpeedFactor = Mathf.InverseLerp(0.05f, maxTargetDistance, Vector3.Distance(_currentConfig.GetPosition, _targetConfig.GetPosition));
+        if (distanceSpeedFactor <= 0f)
+        {
+            t = 1f;
+            return _targetConfig;
+        }
+        
+        float lerpSpeed = transitionSpeed * speedCurve.Evaluate(distanceSpeedFactor);;
+        t = lerpSpeed * Time.deltaTime;
+
         var config = new CameraConfiguration();
 
-        var viewAConfig = viewA.GetConfiguration();
-        var viewBConfig = viewB.GetConfiguration();
+        config.pitch = _targetConfig.pitch * t + _currentConfig.pitch * (1 - t);
+        config.yaw = Vector2.SignedAngle(Vector2.right,
+            new Vector2(Mathf.Cos(_targetConfig.yaw * Mathf.Deg2Rad), Mathf.Sin(_targetConfig.yaw * Mathf.Deg2Rad)) * t // Average Yaw from Vectors
+            + new Vector2(Mathf.Cos(_currentConfig.yaw * Mathf.Deg2Rad), Mathf.Sin(_currentConfig.yaw * Mathf.Deg2Rad)) * (1 - t)); // Average Yaw from Vectors
+        config.roll = _targetConfig.roll * t + _currentConfig.roll * (1 - t);
 
-        config.pitch = (viewAConfig.pitch * t + viewBConfig.pitch * (1 - t));
-        config.yaw = Vector2.SignedAngle(Vector2.right, new Vector2(Mathf.Cos(viewAConfig.yaw * Mathf.Deg2Rad), Mathf.Sin(viewAConfig.yaw * Mathf.Deg2Rad)) * t // Average Yaw from Vectors
-                    + new Vector2(Mathf.Cos(viewBConfig.yaw * Mathf.Deg2Rad), Mathf.Sin(viewBConfig.yaw * Mathf.Deg2Rad)) * (1 - t)); // Average Yaw from Vectors
-        config.roll = (viewAConfig.roll * t + viewBConfig.roll * (1 - t));
-
-        config.distance = (viewAConfig.distance * t + viewBConfig.distance * (1 - t));
-        config.fov = (viewAConfig.fov * t + viewBConfig.fov * (1 - t));
+        config.distance = _targetConfig.distance * t + _currentConfig.distance * (1 - t);
+        config.fov = _targetConfig.fov * t + _currentConfig.fov * (1 - t);
         
-        config.pivot = (viewAConfig.pivot * t + viewBConfig.pivot * (1 - t));
+        config.pivot = _targetConfig.pivot * t + _currentConfig.pivot * (1 - t);
 
         return config;
     }
-
-    public void TransitionFromTo(AView viewA, AView viewB, float time)
-    {
-        if(transitionRoutine != null)
-            StopCoroutine(transitionRoutine);
-
-        transitionRoutine = StartCoroutine(TransitionCoroutine());
-
-        IEnumerator TransitionCoroutine()
-        {
-            t = 0;
-            while (1 - t >= .025f)
-            {
-                t += (1 - t) * (1 / time) * Time.deltaTime;
-                t = 1 - t >= .025f ? t : 1;
-                ApplyConfiguration(_camera, ViewLerp(viewA, viewB, t));
-                yield return null;
-            }
-        }
-
-        transitionRoutine = null;
-    }
-
 
     private void OnDrawGizmos()
     {
@@ -165,5 +168,12 @@ public class CameraController : MonoBehaviour
             return;
         
         _currentConfig?.DrawGizmos(Color.cyan);
+        _targetConfig?.DrawGizmos(Color.red);
+
+        if (_currentConfig == null || _targetConfig == null)
+            return;
+
+        Gizmos.color = Color.Lerp(Color.cyan, Color.red, distanceSpeedFactor);
+        Gizmos.DrawLine(_currentConfig.GetPosition, _targetConfig.GetPosition);
     }
 }

@@ -5,13 +5,15 @@ using UnityEngine;
 
 public abstract class AViewVolume : MonoBehaviour
 {
-    public int priority;
-    public AView view;
+    public int Priority;
+    public AView View;
 
     public int Uid { get; private set; }
     public static int NextUid;
 
     protected bool IsActive { get; private set; }
+
+    [SerializeField] protected bool isCutOnSwitch;
 
     private void Awake()
     {
@@ -19,10 +21,7 @@ public abstract class AViewVolume : MonoBehaviour
         NextUid++;
     }
 
-    public virtual float ComputeSelfWeight()
-    {
-        return 1.0f;
-    }
+    public virtual float ComputeSelfWeight() => 1f;
 
     protected void SetActive(bool isActive)
     {
@@ -34,6 +33,12 @@ public abstract class AViewVolume : MonoBehaviour
         else
         {
             ViewVolumeBlender.Instance.RemoveVolume(this);
+        }
+
+        if(isCutOnSwitch)
+        {
+            ViewVolumeBlender.Instance.UpdateVolumes();
+            CameraController.Instance.Cut();
         }
     }
 }

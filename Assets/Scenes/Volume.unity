@@ -219,8 +219,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0e82a491c5af004c8f40aa963b0c979, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  priority: 5
-  view: {fileID: 1263147}
+  Priority: 2
+  View: {fileID: 1263147}
+  isCutOnSwitch: 0
   target: {fileID: 907776033}
   outerRadius: 10
   innerRadius: 4
@@ -402,7 +403,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 907776028}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.38, y: 0, z: 2}
+  m_LocalPosition: {x: 3.27, y: 0, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -457,10 +458,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _camera: {fileID: 2012592405}
-  currentView: {fileID: 0}
-  targetView: {fileID: 0}
-  transitionTime: 1
+  transitionSpeed: 15
+  speedCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.25
+      inSlope: 1.8998334
+      outSlope: 1.8998334
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.0508982
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1.9693393
+      outSlope: 1.9693393
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.047904193
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  maxTargetDistance: 25
   t: 0
+  isCutRequested: 0
 --- !u!4 &965539846
 Transform:
   m_ObjectHideFlags: 0
@@ -557,7 +582,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1229414790
 Transform:
   m_ObjectHideFlags: 0
@@ -598,8 +623,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7b4a8ab0cb4ea04a91f9c7dee600ae7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  priority: 5
-  view: {fileID: 1263147}
+  Priority: 1
+  View: {fileID: 1513835175}
+  isCutOnSwitch: 1
   targetLayer: 0
 --- !u!1 &1326501757
 GameObject:
@@ -695,6 +721,58 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &1513835174
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1513835176}
+  - component: {fileID: 1513835175}
+  m_Layer: 0
+  m_Name: Sky View
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1513835175
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1513835174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06e1460d0042d284d869093329438167, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isActiveOnStart: 0
+  weight: 1
+  target: {fileID: 907776033}
+  centralPoint: {fileID: 1561353797}
+  roll: 0
+  fov: 90
+  pitchOffsetMax: 25
+  yawOffsetMax: 160
+--- !u!4 &1513835176
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1513835174}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -10, y: 16.92, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1561353793
 GameObject:
   m_ObjectHideFlags: 0
@@ -794,7 +872,7 @@ Transform:
   - {fileID: 1229414790}
   - {fileID: 357795098}
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90}
 --- !u!1 &1652578943
 GameObject:
@@ -825,8 +903,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ba2429973c4d354e837382eee09205a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  priority: 100
-  view: {fileID: 995715492}
+  Priority: 99
+  View: {fileID: 995715492}
+  isCutOnSwitch: 1
   isActiveOnStart: 1
 --- !u!4 &1652578945
 Transform:

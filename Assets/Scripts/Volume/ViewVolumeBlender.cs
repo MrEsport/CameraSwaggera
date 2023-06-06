@@ -21,11 +21,16 @@ public class ViewVolumeBlender : MonoBehaviour
 
     private void Update()
     {
+        UpdateVolumes();
+    }
+
+    public void UpdateVolumes()
+    {
         for (int i = 0; i < activeViewVolumes.Count; ++i)
-            activeViewVolumes[i].view.Weight = 0f;
+            activeViewVolumes[i].View.Weight = 0f;
 
         var orderedVolumes = activeViewVolumes
-            .OrderByDescending(v => v.priority)       // Order by Priority
+            .OrderByDescending(v => v.Priority)       // Order by Priority
             .ThenByDescending(v => v.Uid)             // If Same Priority, Order by UID
             .ToList();
 
@@ -35,32 +40,32 @@ public class ViewVolumeBlender : MonoBehaviour
             float remainingWeight = 1f - weight;
             foreach (var view in volumesPerView.Keys)
                 view.Weight *= remainingWeight;
-            orderedVolumes[i].view.Weight += weight;
+            orderedVolumes[i].View.Weight += weight;
         }
     }
 
     public void AddVolume(AViewVolume volume)
     {
         activeViewVolumes.Add(volume);
-        if (!volumesPerView.ContainsKey(volume.view))
+        if (!volumesPerView.ContainsKey(volume.View))
         {
-            volumesPerView[volume.view] = new List<AViewVolume>() { volume };
-            volume.view.SetActive(true);
+            volumesPerView[volume.View] = new List<AViewVolume>() { volume };
+            volume.View.SetActive(true);
         }
         else
         {
-            volumesPerView[volume.view].Add(volume);
+            volumesPerView[volume.View].Add(volume);
         }
     }
     
     public void RemoveVolume(AViewVolume volume)
     {
         activeViewVolumes.Remove(volume);
-        volumesPerView[volume.view].Remove(volume);
-        if (volumesPerView[volume.view].Count <= 0)
+        volumesPerView[volume.View].Remove(volume);
+        if (volumesPerView[volume.View].Count <= 0)
         {
-            volumesPerView.Remove(volume.view);
-            volume.view.SetActive(false);
+            volumesPerView.Remove(volume.View);
+            volume.View.SetActive(false);
         }
     }
 
