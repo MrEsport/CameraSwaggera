@@ -22,14 +22,14 @@ public abstract class AView : MonoBehaviour
     public void SetActive(bool isActive)
     {
         if(isActive)
-            CameraController.Instance.AddView(this);
+            CameraController.Instance?.AddView(this);
         else
-            CameraController.Instance.RemoveView(this);
+            CameraController.Instance?.RemoveView(this);
     }
 
     protected virtual void Reset()
     {
-        isActiveOnStart = true;
+        isActiveOnStart = false;
         Weight = 1f;
     }
 

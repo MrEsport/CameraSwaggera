@@ -1,22 +1,28 @@
+using NaughtyAttributes;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class FreeFollowView : AView
 {
+    [SerializeField] private Transform target;
+
     [SerializeField] private float[] pitchs;
     [SerializeField] private float[] rolls;
     [SerializeField] private float[] fovs;
 
-    [SerializeField] private float yaw;
+    [InputAxis, SerializeField] private string yawControlAxis;
     [SerializeField] private float yawSpeed;
 
-    [SerializeField] private Transform target;
-
     [SerializeField] private Curve curve;
-    [SerializeField] private float curvePosition;
+    [InputAxis, SerializeField] private string curveControlAxis;
     [SerializeField] private float curveSpeed;
+    [SerializeField] private bool invertCurveAxis;
 
+    [Min(0), SerializeField] private float distance;
+
+    private float yaw;
+    private float curvePosition;
     private Matrix4x4 matrix;
 
     private void Update()
@@ -24,14 +30,18 @@ public class FreeFollowView : AView
         if (target == null)
             return;
 
-        if(Input.GetAxis("Horizontal") != 0)
+        float yawInput = Input.GetAxisRaw(yawControlAxis);
+        float curveInput = Input.GetAxisRaw(curveControlAxis);
+
+        if(yawInput != 0)
         {
-            yaw += yawSpeed * Time.deltaTime * Input.GetAxis("Horizontal");
+            yaw += yawSpeed * Time.deltaTime * yawInput;
         }
 
-        if(Input.GetAxis("Vertical") != 0)
+        if(curveInput != 0)
         {
-            curvePosition += curveSpeed * Time.deltaTime * Input.GetAxis("Vertical");
+            if (invertCurveAxis) curveInput *= -1f;
+            curvePosition += curveSpeed * Time.deltaTime * curveInput;
             curvePosition = Mathf.Clamp01(curvePosition);
         }
     }
@@ -61,6 +71,7 @@ public class FreeFollowView : AView
             config.fov = Mathf.Lerp(fovs[0], fovs[1], t);
         }
 
+        config.distance = distance;
 
         return config;
     }

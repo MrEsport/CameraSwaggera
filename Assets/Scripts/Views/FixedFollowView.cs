@@ -14,12 +14,21 @@ public class FixedFollowView : AView
     [SerializeField, Range(0, 90f)] private float pitchOffsetMax;
     [SerializeField, Range(0, 180f)] private float yawOffsetMax;
 
+    [Min(0f)] public float distance;
+
+    protected override void Start()
+    {
+        base.Start();
+        if (centralPoint == null)
+            centralPoint = target;
+    }
+
     public override CameraConfiguration GetConfiguration()
     {
         var config = base.GetConfiguration();
 
         Vector3 dir = (target.position - transform.position).normalized;
-        Vector3 centralDir = (centralPoint.position - transform.position).normalized;
+        Vector3 centralDir = centralPoint == null ? dir : (centralPoint.position - transform.position).normalized;
 
         float diff = (-Mathf.Asin(dir.y) * Mathf.Rad2Deg) - (-Mathf.Asin(centralDir.y) * Mathf.Rad2Deg);
         config.pitch = (Mathf.Abs(diff) < pitchOffsetMax) ?
@@ -42,14 +51,14 @@ public class FixedFollowView : AView
         config.fov = fov;
 
         config.pivot = transform.position;
-        config.distance = 0f;
+        config.distance = distance;
 
         return config;
     }
 
     private void OnDrawGizmos()
     {
-        if (target == null || centralPoint ==null)
+        if (target == null)
             return;
 
         GetConfiguration().DrawGizmos(Color.magenta);

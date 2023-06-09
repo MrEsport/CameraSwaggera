@@ -28,17 +28,17 @@ public abstract class AViewVolume : MonoBehaviour
         IsActive = isActive;
         if (IsActive)
         {
-            ViewVolumeBlender.Instance.AddVolume(this);
+            ViewVolumeBlender.Instance?.AddVolume(this);
         }
         else
         {
-            ViewVolumeBlender.Instance.RemoveVolume(this);
+            ViewVolumeBlender.Instance?.RemoveVolume(this);
         }
 
         if(isCutOnSwitch)
         {
-            ViewVolumeBlender.Instance.UpdateVolumes();
-            CameraController.Instance.Cut();
+            ViewVolumeBlender.Instance?.UpdateVolumes();
+            CameraController.Instance?.Cut();
         }
     }
 }

@@ -56,6 +56,7 @@ public class ViewVolumeBlender : MonoBehaviour
         {
             volumesPerView[volume.View].Add(volume);
         }
+        UpdateVolumes();
     }
     
     public void RemoveVolume(AViewVolume volume)
@@ -67,6 +68,7 @@ public class ViewVolumeBlender : MonoBehaviour
             volumesPerView.Remove(volume.View);
             volume.View.SetActive(false);
         }
+        UpdateVolumes();
     }
 
     private void OnGUI()
