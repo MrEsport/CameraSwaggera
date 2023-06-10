@@ -12,13 +12,21 @@ public class PlayerController : MonoBehaviour
 	public void Awake()
 	{
 		_rigidbody = GetComponent<Rigidbody>();
+		Cursor.lockState = CursorLockMode.Locked;
 	}
 
 	void FixedUpdate()
     {
 		Vector3 direction = Vector3.zero;
-		direction += Input.GetAxisRaw("Horizontal") * Vector3.right;
-		direction += Input.GetAxisRaw("Vertical") * Vector3.forward;
+
+		Vector3 rightAxis = Camera.main.transform.right;
+		rightAxis.y = 0;
+
+        Vector3 forwardAxis = Camera.main.transform.forward;
+		forwardAxis.y = 0;
+
+        direction += Input.GetAxisRaw("Horizontal") * rightAxis;
+		direction += Input.GetAxisRaw("Vertical") * forwardAxis;
 		direction.Normalize();
 		_rigidbody.velocity = direction * speed + Vector3.up * _rigidbody.velocity.y;
 	}

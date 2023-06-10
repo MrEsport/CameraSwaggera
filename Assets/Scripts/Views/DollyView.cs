@@ -2,7 +2,6 @@ using NaughtyAttributes;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 [UnityEditor.CanEditMultipleObjects]
 public class DollyView : AView
@@ -16,6 +15,8 @@ public class DollyView : AView
 
     [SerializeField] private bool isAuto;
     [SerializeField] private float speed;
+    [HideIf(nameof(isAuto)), InputAxis, SerializeField] private string dollyDistanceInput;
+    [HideIf(nameof(isAuto)), SerializeField] private bool invertInputAxis;
 
     private float _distanceOnRail;
 
@@ -47,7 +48,10 @@ public class DollyView : AView
             }
         }
         else
-            direction = Input.GetAxisRaw("Horizontal");
+        {
+            direction = Input.GetAxisRaw(dollyDistanceInput);
+            if (invertInputAxis) direction *= -1f;
+        }
 
         _distanceOnRail += direction * speed * Time.deltaTime;
         _distanceOnRail = Mathf.Repeat(_distanceOnRail, rail.Length);
