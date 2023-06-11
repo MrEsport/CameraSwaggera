@@ -11,7 +11,7 @@ public class FixedFollowView : AView
     [SerializeField, Range(-180f, 180f)] private float roll;
     [SerializeField, Range(0, 180f)] private float fov;
 
-    [SerializeField, Range(0, 90f)] private float pitchOffsetMax;
+    [SerializeField, Range(0, 120f)] private float pitchOffsetMax;
     [SerializeField, Range(0, 180f)] private float yawOffsetMax;
 
     [Min(0f)] public float distance;
